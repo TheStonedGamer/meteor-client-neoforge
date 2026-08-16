@@ -298,6 +298,13 @@ public class NoRender extends Module {
         .build()
     );
 
+    private final Setting<Boolean> noUltraSpaceDarkness = sgWorld.add(new BoolSetting.Builder()
+        .name("ultra-space-darkness")
+        .description("Removes the low-light effect while in Pixelmon Ultra Space.")
+        .defaultValue(false)
+        .build()
+    );
+
     private final Setting<List<ParticleType<?>>> particles = sgWorld.add(new ParticleTypeListSetting.Builder()
         .name("particles")
         .description("Particles to not render.")
@@ -555,6 +562,10 @@ public class NoRender extends Module {
             || noFireworkExplosions.get() && particleType == ParticleTypes.FIREWORK
             || noUltraSpaceParticles.get() && isInUltraSpace()
             || particles.get().contains(particleType));
+    }
+
+    public boolean noUltraSpaceDarkness() {
+        return isActive() && noUltraSpaceDarkness.get() && isInUltraSpace();
     }
 
     private boolean isInUltraSpace() {

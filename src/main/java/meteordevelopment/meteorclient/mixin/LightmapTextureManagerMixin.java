@@ -21,7 +21,9 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public abstract class LightmapTextureManagerMixin {
     @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/texture/NativeImage;setColor(III)V"))
     private void update(Args args) {
-        if (Modules.get().get(Fullbright.class).getGamma() || Modules.get().isActive(Xray.class)) {
+        if (Modules.get().get(Fullbright.class).getGamma()
+            || Modules.get().isActive(Xray.class)
+            || Modules.get().get(NoRender.class).noUltraSpaceDarkness()) {
             args.set(2, 0xFFFFFFFF);
         }
     }
