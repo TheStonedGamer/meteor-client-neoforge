@@ -134,7 +134,7 @@ public class BlockUtils {
 
         if (result.shouldSwingHand()) {
             if (swing) mc.player.swingHand(hand);
-            else mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(hand));
+            else mc.getNetworkHandler().send(new HandSwingC2SPacket(hand));
         }
 
         mc.player.input.sneaking = wasSneaking;
@@ -249,7 +249,7 @@ public class BlockUtils {
         else mc.interactionManager.attackBlock(pos, getDirection(blockPos));
 
         if (swing) mc.player.swingHand(Hand.MAIN_HAND);
-        else mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+        else mc.getNetworkHandler().send(new HandSwingC2SPacket(Hand.MAIN_HAND));
 
         breaking = true;
         breakingThisTick = true;

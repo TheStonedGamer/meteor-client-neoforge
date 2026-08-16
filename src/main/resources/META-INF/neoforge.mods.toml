@@ -1,0 +1,42 @@
+modLoader="javafml"
+loaderVersion="[${loader_version},)"
+license="GPL-3.0"
+issueTrackerURL="https://github.com/MeteorDevelopment/meteor-client/issues"
+
+[[mods]]
+modId="meteor_client"
+version="${version}"
+displayName="Meteor Client"
+displayURL="https://meteorclient.com"
+logoFile="assets/meteor-client/icon.png"
+authors="MineGame159, squidoodly, seasnail"
+description='''
+Based utility mod, ported to NeoForge 1.21.1.
+'''
+
+[[mixins]]
+config="meteor-client.mixins.json"
+
+[[mixins]]
+config="meteor-client-baritone.mixins.json"
+
+[[dependencies.meteor_client]]
+modId="neoforge"
+type="required"
+versionRange="[21.1,)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.meteor_client]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.meteor_client]]
+modId="baritoe"
+type="optional"
+versionRange="[1.11.2,)"
+ordering="AFTER"
+side="CLIENT"

@@ -73,19 +73,19 @@ public class Sprint extends Module {
 
     @EventHandler
     private void onPacketSend(PacketEvent.Send event) {
-        if (!unsprintOnHit.get() || !(event.packet instanceof IPlayerInteractEntityC2SPacket packet) || packet.getType() != PlayerInteractEntityC2SPacket.InteractType.ATTACK) return;
+        if (!unsprintOnHit.get() || !(event.packet instanceof IPlayerInteractEntityC2SPacket packet) || !packet.isAttack()) return;
 
-        mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
+        mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
         mc.player.setSprinting(false);
     }
 
     @EventHandler
     private void onPacketSent(PacketEvent.Sent event) {
         if (!unsprintOnHit.get() || !keepSprint.get()) return;
-        if (!(event.packet instanceof IPlayerInteractEntityC2SPacket packet) || packet.getType() != PlayerInteractEntityC2SPacket.InteractType.ATTACK) return;
+        if (!(event.packet instanceof IPlayerInteractEntityC2SPacket packet) || !packet.isAttack()) return;
 
         if (shouldSprint() && !mc.player.isSprinting()) {
-            mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
+            mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
             mc.player.setSprinting(true);
         }
     }

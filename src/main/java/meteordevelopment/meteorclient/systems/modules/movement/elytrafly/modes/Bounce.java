@@ -38,7 +38,7 @@ public class Bounce extends ElytraFlightMode {
     public void onTick() {
         super.onTick();
 
-        if (mc.options.jumpKey.isPressed() && !mc.player.isFallFlying()) mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+        if (mc.options.jumpKey.isPressed() && !mc.player.isFallFlying()) mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
 
         // Make sure all the conditions are met (player has an elytra, isn't in water, etc)
         if (checkConditions(mc.player)) {
@@ -62,7 +62,7 @@ public class Bounce extends ElytraFlightMode {
                 if (tickDelay > 0) {
                     tickDelay--;
                 } else {
-                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
                     rubberbanded = false;
                     tickDelay = elytraFly.restartDelay.get();
                 }
@@ -105,7 +105,7 @@ public class Bounce extends ElytraFlightMode {
 
     public static boolean recastElytra(ClientPlayerEntity player) {
         if (checkConditions(player) && ignoreGround(player)) {
-            player.networkHandler.sendPacket(new ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+            player.networkHandler.send(new ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
             return true;
         } else return false;
     }

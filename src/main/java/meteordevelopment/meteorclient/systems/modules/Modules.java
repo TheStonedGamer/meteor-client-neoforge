@@ -399,6 +399,7 @@ public class Modules extends System<Modules> {
 
     private void initCombat() {
         add(new AnchorAura());
+        add(new AntiAnchor());
         add(new AntiAnvil());
         add(new AntiBed());
         add(new ArrowDodge());
@@ -475,6 +476,7 @@ public class Modules extends System<Modules> {
         add(new FastClimb());
         add(new Flight());
         add(new GUIMove());
+        add(new GravityControl());
         add(new HighJump());
         add(new Jesus());
         add(new LongJump());

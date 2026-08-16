@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "1.7-SNAPSHOT"
+    id "dev.architectury.loom" version "1.10.455"
     id "maven-publish"
     id "com.github.johnrengelman.shadow" version "8.1.1"
 }
@@ -11,6 +11,15 @@ base {
 }
 
 repositories {
+    maven { url = uri("gradle/local-maven") }
+    maven {
+        name = "Architectury"
+        url = "https://maven.architectury.dev/"
+    }
+    maven {
+        name = "NeoForged"
+        url = "https://maven.neoforged.net/releases/"
+    }
     maven {
         name = "meteor-maven"
         url = "https://maven.meteordev.org/releases"
@@ -45,27 +54,31 @@ configurations {
 
     // include libraries
     implementation.extendsFrom(library)
+    runtimeOnly.extendsFrom(library)
+    forgeRuntimeLibrary.extendsFrom(library)
     shadow.extendsFrom(library)
 }
 
 dependencies {
-    // Fabric
+    // Minecraft / NeoForge. Architectury Loom remaps the Yarn-named Meteor
+    // sources to the Mojang names used by NeoForge at runtime.
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modInclude fabricApi.module("fabric-resource-loader-v0", project.fapi_version)
+    mappings "net.fabricmc:meteor-yarn:1.21.1+build.3-meteor.1:v2"
+    neoForge "net.neoforged:neoforge:${project.neoforge_version}"
+
+    // Temporary compile-only bridge for the few loader APIs still being ported.
+    // It is not packaged in the NeoForge jar.
+    compileOnly "net.fabricmc:fabric-loader:0.15.11"
 
     // Compat fixes
-    modCompileOnly fabricApi.module("fabric-renderer-indigo", project.fapi_version)
-    modCompileOnly("maven.modrinth:sodium:${project.sodium_version}") { transitive = false }
     modCompileOnly("maven.modrinth:lithium:${project.lithium_version}") { transitive = false }
     modCompileOnly("maven.modrinth:iris:${project.iris_version}") { transitive = false }
     //modCompileOnly("io.vram:canvas-fabric-mc119:1.0.+") { transitive = false } // TODO: 1.19.3
-    modCompileOnly("maven.modrinth:indium:${project.indium_version}") { transitive = false }
     modCompileOnly("de.florianmichael:ViaFabricPlus:${project.viafabricplus_version}") { transitive = false }
 
-    // Baritone (https://github.com/MeteorDevelopment/baritone)
-    modCompileOnly "meteordevelopment:baritone:${project.baritone_version}-SNAPSHOT"
+    // Official NeoForge Baritone API for Minecraft 1.21/1.21.1.
+    // The standalone NeoForge Baritone jar remains an optional runtime mod.
+    modImplementation files("libs/baritone-unoptimized-neoforge-1.11.2.jar")
 
     // Libraries
     library "meteordevelopment:orbit:${project.orbit_version}"
@@ -76,9 +89,11 @@ dependencies {
     library("io.netty:netty-codec-socks:${project.netty_version}") { transitive = false }
     library "de.florianmichael:WaybackAuthLib:${project.waybackauthlib_version}"
 
-    // Launch sub project
-    shadow project(":launch")
 }
+
+sourceSets.main.java.exclude("meteordevelopment/meteorclient/mixin/indigo/**")
+sourceSets.main.java.exclude("meteordevelopment/meteorclient/mixin/indium/**")
+sourceSets.main.java.exclude("meteordevelopment/meteorclient/mixin/sodium/**")
 
 loom {
     accessWidenerPath = file("src/main/resources/meteor-client.accesswidener")
@@ -101,7 +116,7 @@ tasks {
         ]
 
         inputs.properties(propertyMap)
-        filesMatching("fabric.mod.json") {
+        filesMatching("META-INF/neoforge.mods.toml") {
             expand(propertyMap)
         }
     }
@@ -126,6 +141,10 @@ tasks {
 
     shadowJar {
         configurations = [project.configurations.shadow]
+
+        // Annotation APIs are supplied by NeoForge/modpacks. Bundling them creates
+        // split Java modules (notably with CraftPresence's jsr305 dependency).
+        exclude "javax/annotation/**"
 
         from("LICENSE") {
             rename { "${it}_${project.base.archivesBaseName}" }

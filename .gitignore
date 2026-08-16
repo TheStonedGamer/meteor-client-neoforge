@@ -8,6 +8,11 @@ out
 run
 bin
 logs
+/META-INF/
+/yarn-map/
+/yarn-mappings.zip
+/gradle/mappings/
+/gradle/local-maven/net/fabricmc/meteor-yarn/1.21.1+build.3/
 .github/devbuilds/node_modules
 *.iws
 *.ipr

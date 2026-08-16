@@ -41,7 +41,7 @@ public class SayCommand extends Command {
                     ClientPlayNetworkHandler handler = mc.getNetworkHandler();
                     LastSeenMessagesCollector.LastSeenMessages lastSeenMessages = ((ClientPlayNetworkHandlerAccessor) handler).getLastSeenMessagesCollector().collect();
                     MessageSignatureData messageSignatureData = ((ClientPlayNetworkHandlerAccessor) handler).getMessagePacker().pack(new MessageBody(message, instant, l, lastSeenMessages.lastSeen()));
-                    handler.sendPacket(new ChatMessageC2SPacket(message, instant, l, messageSignatureData, lastSeenMessages.update()));
+                    handler.send(new ChatMessageC2SPacket(message, instant, l, messageSignatureData, lastSeenMessages.update()));
                 }
             }
 

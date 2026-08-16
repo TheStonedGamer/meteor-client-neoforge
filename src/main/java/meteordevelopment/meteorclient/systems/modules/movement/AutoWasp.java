@@ -145,7 +145,7 @@ public class AutoWasp extends Module {
                 jumpTimer = 0;
                 mc.player.setJumping(false);
                 mc.player.setSprinting(true);
-                mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
             }
         } else {
             incrementJumpTimer = false;

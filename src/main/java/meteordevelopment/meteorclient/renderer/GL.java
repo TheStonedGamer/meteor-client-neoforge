@@ -9,7 +9,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import meteordevelopment.meteorclient.mixin.BufferRendererAccessor;
 import meteordevelopment.meteorclient.mixininterface.ICapabilityTracker;
 import meteordevelopment.meteorclient.utils.PreInit;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.ModList;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -42,7 +42,7 @@ public class GL {
 
     @PreInit
     public static void init() {
-        if (FabricLoader.getInstance().isModLoaded("canvas")) changeBufferRenderer = false;
+        if (ModList.get().isLoaded("canvas")) changeBufferRenderer = false;
     }
 
     // Generation
@@ -328,11 +328,9 @@ public class GL {
             field.setAccessible(true);
             Object state = field.get(null);
 
-            String trackerName = FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", "com.mojang.blaze3d.platform.GlStateManager$class_1018");
-
             Field capStateField = null;
             for (Field f : state.getClass().getDeclaredFields()) {
-                if (f.getType().getName().equals(trackerName)) {
+                if (ICapabilityTracker.class.isAssignableFrom(f.getType())) {
                     capStateField = f;
                     break;
                 }

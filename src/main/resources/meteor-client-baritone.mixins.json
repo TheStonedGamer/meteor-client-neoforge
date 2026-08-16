@@ -1,5 +1,5 @@
 {
-  "required": true,
+  "required": false,
   "package": "meteordevelopment.meteorclient.mixin.baritone",
   "compatibilityLevel": "JAVA_21",
   "plugin": "meteordevelopment.meteorclient.MixinPlugin",

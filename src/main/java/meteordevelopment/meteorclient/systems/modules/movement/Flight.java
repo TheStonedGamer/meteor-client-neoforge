@@ -40,6 +40,17 @@ public class Flight extends Module {
         .description("Your speed when flying.")
         .defaultValue(0.1)
         .min(0.0)
+        .visible(() -> mode.get() != Mode.Creative)
+        .build()
+    );
+
+    private final Setting<Double> creativeSpeed = sgGeneral.add(new DoubleSetting.Builder()
+        .name("creative-speed")
+        .description("Creative-style flight speed multiplier. 1.0 is vanilla creative speed.")
+        .defaultValue(1.0)
+        .min(0.0)
+        .sliderRange(0.1, 10.0)
+        .visible(() -> mode.get() == Mode.Creative)
         .build()
     );
 
@@ -89,6 +100,10 @@ public class Flight extends Module {
     private boolean flip;
     private float lastYaw;
     private double lastPacketY = Double.MAX_VALUE;
+    private boolean previousAllowFlying;
+    private boolean previousFlying;
+    private float previousFlySpeed;
+    private boolean creativeFlying;
 
     public Flight() {
         super(Categories.Movement, "flight", "FLYYYY! No Fall is recommended with this module.");
@@ -96,22 +111,32 @@ public class Flight extends Module {
 
     @Override
     public void onActivate() {
+        previousAllowFlying = mc.player.getAbilities().allowFlying;
+        previousFlying = mc.player.getAbilities().flying;
+        previousFlySpeed = mc.player.getAbilities().getFlySpeed();
+
         if (mode.get() == Mode.Abilities && !mc.player.isSpectator()) {
             mc.player.getAbilities().flying = true;
             if (mc.player.getAbilities().creativeMode) return;
             mc.player.getAbilities().allowFlying = true;
+        } else if (mode.get() == Mode.Creative && !mc.player.isSpectator()) {
+            creativeFlying = false;
+            mc.player.getAbilities().allowFlying = true;
+            mc.player.getAbilities().flying = false;
         }
     }
 
     @Override
     public void onDeactivate() {
-        if (mode.get() == Mode.Abilities && !mc.player.isSpectator()) {
+        if ((mode.get() == Mode.Abilities || mode.get() == Mode.Creative) && !mc.player.isSpectator()) {
             abilitiesOff();
         }
     }
 
     @EventHandler
     private void onPreTick(TickEvent.Pre event) {
+        if (mode.get() == Mode.Creative) maintainCreativeAbilities();
+
         float currentYaw = mc.player.getYaw();
         if (mc.player.fallDistance >= 3f && currentYaw == lastYaw && mc.player.getVelocity().length() < 0.003d) {
             mc.player.setYaw(currentYaw + (flip ? 1 : -1));
@@ -173,7 +198,24 @@ public class Flight extends Module {
                 if (mc.player.getAbilities().creativeMode) return;
                 mc.player.getAbilities().allowFlying = true;
             }
+            case Creative -> {
+                // Vanilla handles the double-tap between pre and post tick.
+                // Remember its result, then force that state until the next
+                // intentional double-tap changes it.
+                creativeFlying = mc.player.getAbilities().flying;
+                maintainCreativeAbilities();
+            }
         }
+    }
+
+    private void maintainCreativeAbilities() {
+        if (mc.player.isSpectator()) return;
+
+        // Servers can resend abilities at any time. Reassert permission and
+        // the remembered double-tap state before and after the player tick.
+        mc.player.getAbilities().allowFlying = true;
+        mc.player.getAbilities().setFlySpeed(0.05f * creativeSpeed.get().floatValue());
+        mc.player.getAbilities().flying = creativeFlying;
     }
 
     private void antiKickPacket(PlayerMoveC2SPacket packet, double currentY) {
@@ -221,7 +263,7 @@ public class Flight extends Module {
             }
             event.cancel();
             antiKickPacket(fullPacket, mc.player.getY());
-            mc.getNetworkHandler().sendPacket(fullPacket);
+            mc.getNetworkHandler().send(fullPacket);
         }
     }
 
@@ -232,10 +274,9 @@ public class Flight extends Module {
     }
 
     private void abilitiesOff() {
-        mc.player.getAbilities().flying = false;
-        mc.player.getAbilities().setFlySpeed(0.05f);
-        if (mc.player.getAbilities().creativeMode) return;
-        mc.player.getAbilities().allowFlying = false;
+        mc.player.getAbilities().flying = previousFlying;
+        mc.player.getAbilities().setFlySpeed(previousFlySpeed);
+        mc.player.getAbilities().allowFlying = previousAllowFlying;
     }
 
     // Copied from ServerPlayNetworkHandler#isEntityOnAir
@@ -256,6 +297,7 @@ public class Flight extends Module {
 
     public enum Mode {
         Abilities,
+        Creative,
         Velocity
     }
 

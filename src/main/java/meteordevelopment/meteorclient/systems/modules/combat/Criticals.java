@@ -79,7 +79,7 @@ public class Criticals extends Module {
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
-        if (event.packet instanceof IPlayerInteractEntityC2SPacket packet && packet.getType() == PlayerInteractEntityC2SPacket.InteractType.ATTACK) {
+        if (event.packet instanceof IPlayerInteractEntityC2SPacket packet && packet.isAttack()) {
             if (mace.get() && mc.player.getMainHandStack().getItem() instanceof MaceItem) {
                 if (mc.player.isFallFlying()) return;
 
@@ -136,8 +136,8 @@ public class Criticals extends Module {
                 sendPackets = false;
 
                 if (attackPacket == null || swingPacket == null) return;
-                mc.getNetworkHandler().sendPacket(attackPacket);
-                mc.getNetworkHandler().sendPacket(swingPacket);
+                mc.getNetworkHandler().send(attackPacket);
+                mc.getNetworkHandler().send(swingPacket);
 
                 attackPacket = null;
                 swingPacket = null;
@@ -155,7 +155,7 @@ public class Criticals extends Module {
         PlayerMoveC2SPacket packet = new PlayerMoveC2SPacket.PositionAndOnGround(x, y + height, z, false);
         ((IPlayerMoveC2SPacket) packet).setTag(1337);
 
-        mc.player.networkHandler.sendPacket(packet);
+        mc.player.networkHandler.send(packet);
     }
 
     private boolean skipCrit() {

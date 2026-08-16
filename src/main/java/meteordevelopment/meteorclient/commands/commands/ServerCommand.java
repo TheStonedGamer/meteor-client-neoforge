@@ -71,7 +71,7 @@ public class ServerCommand extends Command {
             plugins.addAll(commandTreePlugins);
 
             if (alias != null) {
-                mc.getNetworkHandler().sendPacket(new RequestCommandCompletionsC2SPacket(RANDOM.nextInt(200), alias + " "));
+                mc.getNetworkHandler().send(new RequestCommandCompletionsC2SPacket(RANDOM.nextInt(200), alias + " "));
                 tick = true;
             } else printPlugins();
 

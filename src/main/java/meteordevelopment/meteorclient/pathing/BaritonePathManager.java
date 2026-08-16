@@ -46,10 +46,17 @@ public class BaritonePathManager implements IPathManager {
         Class<?> klass = BaritoneAPI.getProvider().getPrimaryBaritone().getLookBehavior().getClass();
         VarHandle rotationField = null;
 
+        MethodHandles.Lookup baritoneLookup;
+        try {
+            baritoneLookup = MethodHandles.privateLookupIn(klass, MethodHandles.lookup());
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Cannot access Baritone look behavior", e);
+        }
+
         for (Field field : klass.getDeclaredFields()) {
             if (field.getType() == Rotation.class) {
                 try {
-                    rotationField = MethodHandles.lookup().unreflectVarHandle(field);
+                    rotationField = baritoneLookup.unreflectVarHandle(field);
                     break;
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);

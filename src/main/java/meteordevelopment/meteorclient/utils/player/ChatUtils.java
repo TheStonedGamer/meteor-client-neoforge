@@ -35,6 +35,8 @@ public class ChatUtils {
 
     @PostInit
     public static void init() {
+        if (PREFIX != null) return;
+
         PREFIX = Text.empty()
             .setStyle(Style.EMPTY.withFormatting(Formatting.GRAY))
             .append("[")
@@ -145,9 +147,10 @@ public class ChatUtils {
         if (mc.world == null) return;
 
         MutableText message = Text.empty();
-        message.append(getPrefix());
+        Text prefix = getPrefix();
+        if (prefix != null) message.append(prefix);
         if (prefixTitle != null) message.append(getCustomPrefix(prefixTitle, prefixColor));
-        message.append(msg);
+        if (msg != null) message.append(msg);
 
         if (!Config.get().deleteChatFeedback.get()) id = 0;
 

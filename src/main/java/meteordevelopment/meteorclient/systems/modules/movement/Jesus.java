@@ -54,6 +54,13 @@ public class Jesus extends Module {
         .build()
     );
 
+    private final Setting<Boolean> ncpBypass = sgGeneral.add(new BoolSetting.Builder()
+        .name("ncp-bypass")
+        .description("Applies the legacy movement-packet bypass for NoCheatPlus servers.")
+        .defaultValue(false)
+        .build()
+    );
+
     // Water
 
     private final Setting<Mode> waterMode = sgWater.add(new EnumSetting.Builder<Mode>()
@@ -158,6 +165,9 @@ public class Jesus extends Module {
 
     @Override
     public void onActivate() {
+        tickTimer = 10;
+        packetTimer = 0;
+
         prePathManagerWalkOnWater = PathManagers.get().getSettings().getWalkOnWater().get();
         prePathManagerWalkOnLava = PathManagers.get().getSettings().getWalkOnLava().get();
 
@@ -240,15 +250,16 @@ public class Jesus extends Module {
     private void onFluidCollisionShape(CollisionShapeEvent event) {
         if (event.state.getFluidState().isEmpty()) return;
 
-        if ((event.state.getBlock() == Blocks.WATER | event.state.getFluidState().getFluid() == Fluids.WATER) && !mc.player.isTouchingWater() && waterShouldBeSolid() && event.pos.getY() <= mc.player.getY() - 1) {
+        if ((event.state.getBlock() == Blocks.WATER || event.state.getFluidState().getFluid() == Fluids.WATER || event.state.getFluidState().getFluid() == Fluids.FLOWING_WATER) && !mc.player.isTouchingWater() && waterShouldBeSolid() && event.pos.getY() <= mc.player.getY() - 1) {
             event.shape = VoxelShapes.fullCube();
-        } else if (event.state.getBlock() == Blocks.LAVA && !mc.player.isInLava() && lavaShouldBeSolid() && (!lavaIsSafe() || event.pos.getY() <= mc.player.getY() - 1)) {
+        } else if ((event.state.getBlock() == Blocks.LAVA || event.state.getFluidState().getFluid() == Fluids.LAVA || event.state.getFluidState().getFluid() == Fluids.FLOWING_LAVA) && !mc.player.isInLava() && lavaShouldBeSolid() && (!lavaIsSafe() || event.pos.getY() <= mc.player.getY() - 1)) {
             event.shape = VoxelShapes.fullCube();
         }
     }
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
+        if (!ncpBypass.get()) return;
         if (!(event.packet instanceof PlayerMoveC2SPacket packet)) return;
         if (mc.player.isTouchingWater() && !waterShouldBeSolid()) return;
         if (mc.player.isInLava() && !lavaShouldBeSolid()) return;
@@ -339,7 +350,7 @@ public class Jesus extends Module {
             blockPos.set(MathHelper.lerp(0.5D, bb.minX, bb.maxX), MathHelper.lerp(0.5D, bb.minY, bb.maxY), MathHelper.lerp(0.5D, bb.minZ, bb.maxZ));
             BlockState blockState = mc.world.getBlockState(blockPos);
 
-            if ((blockState.getBlock() == Blocks.WATER | blockState.getFluidState().getFluid() == Fluids.WATER) || blockState.getBlock() == Blocks.LAVA)
+            if (blockState.getFluidState().isIn(FluidTags.WATER) || blockState.getFluidState().isIn(FluidTags.LAVA))
                 foundLiquid = true;
             else if (!blockState.isAir()) foundSolid = true;
         }

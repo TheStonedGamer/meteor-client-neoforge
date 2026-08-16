@@ -99,7 +99,7 @@ public class ElytraFlightMode {
                 mc.player.setJumping(false);
                 mc.player.setSprinting(true);
                 mc.player.jump();
-                mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
             }
         }
 

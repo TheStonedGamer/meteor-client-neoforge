@@ -67,7 +67,7 @@ public class InventoryTweaks extends Module {
         .defaultValue(true)
         .onChanged(v -> {
             if (v || !Utils.canUpdate()) return;
-            mc.player.networkHandler.sendPacket(new CloseHandledScreenC2SPacket(mc.player.playerScreenHandler.syncId));
+            mc.player.networkHandler.send(new CloseHandledScreenC2SPacket(mc.player.playerScreenHandler.syncId));
             invOpened = false;
         })
         .build()
@@ -252,7 +252,7 @@ public class InventoryTweaks extends Module {
         sorter = null;
 
         if (invOpened) {
-            mc.player.networkHandler.sendPacket(new CloseHandledScreenC2SPacket(mc.player.playerScreenHandler.syncId));
+            mc.player.networkHandler.send(new CloseHandledScreenC2SPacket(mc.player.playerScreenHandler.syncId));
         }
     }
 

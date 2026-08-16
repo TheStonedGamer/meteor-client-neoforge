@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FluidRenderer.class)
 public abstract class FluidRendererMixin {
-    @Unique private final ThreadLocal<Integer> alphas = new ThreadLocal<>();
+    @Unique private final ThreadLocal<Integer> alphas = ThreadLocal.withInitial(() -> -1);
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void onRender(BlockRenderView world, BlockPos pos, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState, CallbackInfo info) {
@@ -43,7 +43,7 @@ public abstract class FluidRendererMixin {
     }
 
     @Inject(method = "vertex", at = @At("HEAD"), cancellable = true)
-    private void onVertex(VertexConsumer vertexConsumer, float x, float y, float z, float red, float green, float blue, float u, float v, int light, CallbackInfo info) {
+    private void onVertex(VertexConsumer vertexConsumer, float x, float y, float z, float red, float green, float blue, float alphaMultiplier, float u, float v, int light, CallbackInfo info) {
         int alpha = alphas.get();
 
         if (alpha == -2) {

@@ -69,12 +69,16 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 public class MeteorStarscript {
     public static Starscript ss = new Starscript();
+    private static boolean initialized;
 
     private static final BlockPos.Mutable BP = new BlockPos.Mutable();
     private static final StringBuilder SB = new StringBuilder();
 
     @PreInit(dependencies = PathManagers.class)
     public static void init() {
+        if (initialized) return;
+        initialized = true;
+
         StandardLib.init(ss);
 
         // General
@@ -315,7 +319,7 @@ public class MeteorStarscript {
 
         long time = System.currentTimeMillis();
         if ((time - lastRequestedStatsTime) / 1000.0 >= 1 && mc.getNetworkHandler() != null) {
-            mc.getNetworkHandler().sendPacket(new ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS));
+            mc.getNetworkHandler().send(new ClientStatusC2SPacket(ClientStatusC2SPacket.Mode.REQUEST_STATS));
             lastRequestedStatsTime = time;
         }
 

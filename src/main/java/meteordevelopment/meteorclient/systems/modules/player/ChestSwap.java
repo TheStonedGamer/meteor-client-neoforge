@@ -130,7 +130,7 @@ public class ChestSwap extends Module {
         InvUtils.move().from(slot).toArmor(2);
         if (closeInventory.get()) {
             // Notchian clients send a Close Window packet with Window ID 0 to close their inventory even though there is never an Open Screen packet for the inventory.
-            mc.getNetworkHandler().sendPacket(new CloseHandledScreenC2SPacket(0));
+            mc.getNetworkHandler().send(new CloseHandledScreenC2SPacket(0));
         }
     }
 

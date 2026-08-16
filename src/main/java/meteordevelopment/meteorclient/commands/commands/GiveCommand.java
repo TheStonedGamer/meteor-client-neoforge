@@ -34,7 +34,7 @@ public class GiveCommand extends Command {
             FindItemResult fir = InvUtils.find(ItemStack::isEmpty, 0, 8);
             if (!fir.found()) throw NO_SPACE.create();
 
-            mc.getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + fir.slot(), item));
+            mc.getNetworkHandler().send(new CreativeInventoryActionC2SPacket(36 + fir.slot(), item));
 
             return SINGLE_SUCCESS;
         }).then(argument("number", IntegerArgumentType.integer()).executes(context -> {
@@ -44,7 +44,7 @@ public class GiveCommand extends Command {
             FindItemResult fir = InvUtils.find(ItemStack::isEmpty, 0, 8);
             if (!fir.found()) throw NO_SPACE.create();
 
-            mc.getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(36 + fir.slot(), item));
+            mc.getNetworkHandler().send(new CreativeInventoryActionC2SPacket(36 + fir.slot(), item));
 
             return SINGLE_SUCCESS;
         })));

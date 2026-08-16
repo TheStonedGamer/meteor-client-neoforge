@@ -32,7 +32,11 @@ public abstract class ParticleManagerMixin {
 
     @Inject(method = "addParticle(Lnet/minecraft/particle/ParticleEffect;DDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("HEAD"), cancellable = true)
     private void onAddParticle(ParticleEffect parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfoReturnable<Particle> info) {
-        ParticleEvent event = MeteorClient.EVENT_BUS.post(ParticleEvent.get(parameters));
+        NoRender noRender = Modules.get().get(NoRender.class);
+        ParticleEvent event = ParticleEvent.get(parameters);
+
+        if (noRender.shouldSuppressParticle(parameters.getType())) event.cancel();
+        else MeteorClient.EVENT_BUS.post(event);
 
         if (event.isCancelled()) {
             if (parameters.getType() == ParticleTypes.FLASH) info.setReturnValue(createParticle(parameters, x, y, z, velocityX, velocityY, velocityZ));

@@ -382,7 +382,7 @@ public class ElytraFly extends Module {
 
                 // Handle stopInWater
                 if (mc.player.isTouchingWater() && stopInWater.get()) {
-                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    mc.getNetworkHandler().send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
                     return;
                 }
 
@@ -515,7 +515,7 @@ public class ElytraFly extends Module {
         private void onInstadropTick(TickEvent.Post event) {
             if (mc.player != null && mc.player.isFallFlying()) {
                 mc.player.setVelocity(0, 0, 0);
-                mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.OnGroundOnly(true));
+                mc.player.networkHandler.send(new PlayerMoveC2SPacket.OnGroundOnly(true));
             } else {
                 disableInstaDropListener();
             }

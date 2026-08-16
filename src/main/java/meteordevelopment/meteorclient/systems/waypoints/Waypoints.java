@@ -143,7 +143,7 @@ public class Waypoints extends System<Waypoints> implements Iterable<Waypoint> {
     }
 
     private void copyIcon(File file) {
-        String path = "/assets/" + MeteorClient.MOD_ID + "/textures/icons/waypoints/" + file.getName();
+        String path = "/assets/meteor-client/textures/icons/waypoints/" + file.getName();
         InputStream in = Waypoints.class.getResourceAsStream(path);
 
         if (in == null) {

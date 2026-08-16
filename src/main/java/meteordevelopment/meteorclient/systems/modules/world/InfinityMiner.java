@@ -214,7 +214,7 @@ public class InfinityMiner extends Module {
 
     private void logOut() {
         toggle();
-        mc.player.networkHandler.sendPacket(new DisconnectS2CPacket(Text.literal("[Infinity Miner] Inventory is full.")));
+        mc.player.networkHandler.send(new DisconnectS2CPacket(Text.literal("[Infinity Miner] Inventory is full.")));
     }
 
     private boolean isBaritoneNotMining() {

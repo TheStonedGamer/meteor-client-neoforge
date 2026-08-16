@@ -15,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.util.Identifier;
 
 import java.util.List;
 import java.util.Set;
@@ -290,6 +291,13 @@ public class NoRender extends Module {
         .build()
     );
 
+    private final Setting<Boolean> noUltraSpaceParticles = sgWorld.add(new BoolSetting.Builder()
+        .name("ultra-space-particles")
+        .description("Disables all particles while in Pixelmon Ultra Space.")
+        .defaultValue(false)
+        .build()
+    );
+
     private final Setting<List<ParticleType<?>>> particles = sgWorld.add(new ParticleTypeListSetting.Builder()
         .name("particles")
         .description("Particles to not render.")
@@ -539,9 +547,21 @@ public class NoRender extends Module {
 
     @EventHandler
     private void onAddParticle(ParticleEvent event) {
-        if (noWeather.get() && event.particle.getType() == ParticleTypes.RAIN) event.cancel();
-        else if (noFireworkExplosions.get() && event.particle.getType() == ParticleTypes.FIREWORK) event.cancel();
-        else if (particles.get().contains(event.particle.getType())) event.cancel();
+        if (shouldSuppressParticle(event.particle.getType())) event.cancel();
+    }
+
+    public boolean shouldSuppressParticle(ParticleType<?> particleType) {
+        return isActive() && (noWeather.get() && particleType == ParticleTypes.RAIN
+            || noFireworkExplosions.get() && particleType == ParticleTypes.FIREWORK
+            || noUltraSpaceParticles.get() && isInUltraSpace()
+            || particles.get().contains(particleType));
+    }
+
+    private boolean isInUltraSpace() {
+        if (mc.world == null) return false;
+
+        Identifier dimension = mc.world.getRegistryKey().getValue();
+        return dimension.getNamespace().equals("pixelmon") && dimension.getPath().equals("ultra_space");
     }
 
     public boolean noBarrierInvis() {

@@ -49,7 +49,7 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
-    @ModifyExpressionValue(method = "updateMovementInFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/FluidState;getVelocity(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/Vec3d;"))
+    @ModifyExpressionValue(method = "updateMovementInFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/FluidState;getVelocity(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/Vec3d;"), require = 0)
     private Vec3d updateMovementInFluidFluidStateGetVelocity(Vec3d vec) {
         Velocity velocity = Modules.get().get(Velocity.class);
         if ((Object) this == mc.player && velocity.isActive() && velocity.liquids.get()) {
@@ -185,11 +185,24 @@ public abstract class EntityMixin {
 
     @Inject(method = "changeLookDirection", at = @At("HEAD"), cancellable = true)
     private void updateChangeLookDirection(double cursorDeltaX, double cursorDeltaY, CallbackInfo ci) {
+        Freecam freecam = Modules.get().get(Freecam.class);
+
+        // Mouse input is applied to the current camera entity, which is not
+        // guaranteed to be the client player (for example while another mod
+        // temporarily replaces it). Freecam must consume that input before the
+        // player-only checks below or its yaw and pitch never change.
+        if (freecam.isActive() && (Object) this == mc.getCameraEntity()) {
+            freecam.changeLookDirection(cursorDeltaX * 0.15, cursorDeltaY * 0.15);
+            ci.cancel();
+            return;
+        }
+
         if ((Object) this != mc.player) return;
 
-        Freecam freecam = Modules.get().get(Freecam.class);
         FreeLook freeLook = Modules.get().get(FreeLook.class);
 
+        // Keep handling the player as a fallback for clients that route mouse
+        // input directly to it even when a different camera entity is active.
         if (freecam.isActive()) {
             freecam.changeLookDirection(cursorDeltaX * 0.15, cursorDeltaY * 0.15);
             ci.cancel();

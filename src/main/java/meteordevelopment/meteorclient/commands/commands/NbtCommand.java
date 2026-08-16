@@ -204,7 +204,7 @@ public class NbtCommand extends Command {
     }
 
     private void setStack(ItemStack stack) {
-        mc.player.networkHandler.sendPacket(new CreativeInventoryActionC2SPacket(36 + mc.player.getInventory().selectedSlot, stack));
+        mc.player.networkHandler.send(new CreativeInventoryActionC2SPacket(36 + mc.player.getInventory().selectedSlot, stack));
     }
 
     private boolean validBasic(ItemStack stack) {

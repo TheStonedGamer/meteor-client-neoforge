@@ -25,8 +25,13 @@ public abstract class PlayerInteractEntityC2SPacketMixin implements IPlayerInter
     @Shadow @Final private int entityId;
 
     @Override
-    public PlayerInteractEntityC2SPacket.InteractType getType() {
-        return type.getType();
+    public boolean isAttack() {
+        return type.getType() == PlayerInteractEntityC2SPacket.InteractType.ATTACK;
+    }
+
+    @Override
+    public boolean isInteractAt() {
+        return type.getType() == PlayerInteractEntityC2SPacket.InteractType.INTERACT_AT;
     }
 
     @Override

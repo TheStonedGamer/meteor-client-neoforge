@@ -18,7 +18,7 @@ public class DismountCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
-            mc.getNetworkHandler().sendPacket(new PlayerInputC2SPacket(0, 0, false, true));
+            mc.getNetworkHandler().send(new PlayerInputC2SPacket(0, 0, false, true));
             return SINGLE_SUCCESS;
         });
     }

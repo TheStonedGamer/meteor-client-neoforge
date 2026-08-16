@@ -9,6 +9,7 @@ import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.addons.AddonManager;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import org.reflections.Reflections;
+import org.reflections.util.ConfigurationBuilder;
 import org.reflections.scanners.Scanners;
 
 import java.lang.annotation.Annotation;
@@ -38,7 +39,20 @@ public class ReflectInit {
     private static void add(MeteorAddon addon) {
         String pkg = addon.getPackage();
         if (pkg == null || pkg.isBlank()) return;
-        reflections.add(new Reflections(pkg, Scanners.MethodsAnnotated));
+
+        // ModLauncher's module class loader is not part of the conventional Java
+        // class path, so Reflections cannot infer the mod's URL on NeoForge.
+        // Supplying the addon's own code source keeps annotation discovery working
+        // both in the development classes directory and in the built mod jar.
+        ConfigurationBuilder configuration = new ConfigurationBuilder()
+            .forPackages(pkg)
+            .setScanners(Scanners.MethodsAnnotated);
+
+        if (addon.getClass().getProtectionDomain().getCodeSource() != null) {
+            configuration.addUrls(addon.getClass().getProtectionDomain().getCodeSource().getLocation());
+        }
+
+        reflections.add(new Reflections(configuration));
     }
 
     public static void init(Class<? extends Annotation> annotation) {

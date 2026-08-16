@@ -869,13 +869,13 @@ public class CrystalAura extends Module {
 
     private void attackCrystal(Entity entity) {
         // Attack
-        mc.player.networkHandler.sendPacket(PlayerInteractEntityC2SPacket.attack(entity, mc.player.isSneaking()));
+        mc.player.networkHandler.send(PlayerInteractEntityC2SPacket.attack(entity, mc.player.isSneaking()));
 
         Hand hand = InvUtils.findInHotbar(Items.END_CRYSTAL).getHand();
         if (hand == null) hand = Hand.MAIN_HAND;
 
         if (swingMode.get().client()) mc.player.swingHand(hand);
-        if (swingMode.get().packet()) mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(hand));
+        if (swingMode.get().packet()) mc.getNetworkHandler().send(new HandSwingC2SPacket(hand));
 
         attacks++;
     }
@@ -1035,10 +1035,10 @@ public class CrystalAura extends Module {
         // Place
         if (supportBlock == null) {
             // Place crystal
-            mc.player.networkHandler.sendPacket(new PlayerInteractBlockC2SPacket(hand, result, 0));
+            mc.player.networkHandler.send(new PlayerInteractBlockC2SPacket(hand, result, 0));
 
             if (swingMode.get().client()) mc.player.swingHand(hand);
-            if (swingMode.get().packet()) mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(hand));
+            if (swingMode.get().packet()) mc.getNetworkHandler().send(new HandSwingC2SPacket(hand));
 
             placing = true;
             placingTimer = 4;

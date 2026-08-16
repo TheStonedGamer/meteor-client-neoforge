@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BlockModelRenderer.class)
 public abstract class BlockModelRendererMixin {
     @Unique
-    private final ThreadLocal<Integer> alphas = new ThreadLocal<>();
+    private final ThreadLocal<Integer> alphas = ThreadLocal.withInitial(() -> -1);
 
     @Inject(method = {"renderSmooth", "renderFlat"}, at = @At("HEAD"), cancellable = true)
     private void onRenderSmooth(BlockRenderView world, BakedModel model, BlockState state, BlockPos pos, MatrixStack matrices, VertexConsumer vertexConsumer, boolean cull, Random random, long seed, int overlay, CallbackInfo info) {

@@ -6,18 +6,23 @@
 package meteordevelopment.meteorclient.addons;
 
 import meteordevelopment.meteorclient.MeteorClient;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
-import net.fabricmc.loader.api.metadata.ModMetadata;
-import net.fabricmc.loader.api.metadata.Person;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforgespi.language.IModInfo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 public class AddonManager {
     public static final List<MeteorAddon> ADDONS = new ArrayList<>();
 
     public static void init() {
+        ADDONS.clear();
+
         // Meteor pseudo addon
         {
             MeteorClient.ADDON = new MeteorAddon() {
@@ -41,50 +46,100 @@ public class AddonManager {
 
                 @Override
                 public String getCommit() {
-                    String commit = MeteorClient.MOD_META.getCustomValue(MeteorClient.MOD_ID + ":commit").getAsString();
+                    String commit = System.getProperty("meteor.commit", "");
                     return commit.isEmpty() ? null : commit;
                 }
             };
 
-            ModMetadata metadata = FabricLoader.getInstance().getModContainer(MeteorClient.MOD_ID).get().getMetadata();
-
-            MeteorClient.ADDON.name = metadata.getName();
-            MeteorClient.ADDON.authors = new String[metadata.getAuthors().size()];
-            if (metadata.containsCustomValue(MeteorClient.MOD_ID + ":color")) {
-                MeteorClient.ADDON.color.parse(metadata.getCustomValue(MeteorClient.MOD_ID + ":color").getAsString());
-            }
-
-            int i = 0;
-            for (Person author : metadata.getAuthors()) {
-                MeteorClient.ADDON.authors[i++] = author.getName();
-            }
+            MeteorClient.ADDON.name = MeteorClient.NAME;
+            MeteorClient.ADDON.authors = new String[] { "MineGame159", "squidoodly", "seasnail" };
+            MeteorClient.ADDON.color.parse("145,61,226");
         }
 
-        // Addons
-        for (EntrypointContainer<MeteorAddon> entrypoint : FabricLoader.getInstance().getEntrypointContainers("meteor", MeteorAddon.class)) {
-            ModMetadata metadata = entrypoint.getProvider().getMetadata();
-            MeteorAddon addon;
-            try {
-                addon = entrypoint.getEntrypoint();
-            } catch (Throwable throwable) {
-                throw new RuntimeException("Exception during addon init \"%s\".".formatted(metadata.getName()), throwable);
+        Set<Class<?>> discovered = new HashSet<>();
+
+        // Standard Java provider discovery. Addons can declare
+        // META-INF/services/meteordevelopment.meteorclient.addons.MeteorAddon.
+        try {
+            for (MeteorAddon addon : ServiceLoader.load(MeteorAddon.class, Thread.currentThread().getContextClassLoader())) {
+                add(addon, null, discovered);
             }
-
-            addon.name = metadata.getName();
-
-            if (metadata.getAuthors().isEmpty()) throw new RuntimeException("Addon \"%s\" requires at least 1 author to be defined in it's fabric.mod.json. See https://fabricmc.net/wiki/documentation:fabric_mod_json_spec".formatted(addon.name));
-            addon.authors = new String[metadata.getAuthors().size()];
-
-            if (metadata.containsCustomValue(MeteorClient.MOD_ID + ":color")) {
-                addon.color.parse(metadata.getCustomValue(MeteorClient.MOD_ID + ":color").getAsString());
-            }
-
-            int i = 0;
-            for (Person author : metadata.getAuthors()) {
-                addon.authors[i++] = author.getName();
-            }
-
-            ADDONS.add(addon);
+        } catch (ServiceConfigurationError error) {
+            MeteorClient.LOG.error("Failed to discover a Meteor addon service.", error);
         }
+
+        // NeoForge-native entrypoints declared in neoforge.mods.toml:
+        // [modproperties.<modid>]
+        // meteor_addon = "com.example.ExampleAddon"
+        for (IModInfo mod : ModList.get().getMods()) {
+            Map<String, Object> properties = mod.getModProperties();
+            Object entrypoint = first(properties, "meteor_addon", "meteor:addon", "meteor-addon");
+            if (entrypoint == null) continue;
+
+            for (String className : entrypoints(entrypoint)) {
+                try {
+                    Class<?> klass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+                    if (!MeteorAddon.class.isAssignableFrom(klass)) {
+                        throw new IllegalArgumentException(className + " does not extend MeteorAddon");
+                    }
+
+                    MeteorAddon addon = (MeteorAddon) klass.getDeclaredConstructor().newInstance();
+                    add(addon, mod, discovered);
+                } catch (Throwable throwable) {
+                    throw new RuntimeException("Exception during addon init \"%s\" (%s).".formatted(mod.getDisplayName(), className), throwable);
+                }
+            }
+        }
+    }
+
+    private static void add(MeteorAddon addon, IModInfo mod, Set<Class<?>> discovered) {
+        if (!discovered.add(addon.getClass())) return;
+
+        if (mod != null) {
+            addon.name = mod.getDisplayName();
+
+            Object authors = mod.getConfig().getConfigElement("authors").orElse(null);
+            addon.authors = strings(authors);
+
+            Object color = first(mod.getModProperties(), "meteor_color", "meteor:color", "meteor-color", "meteor_client:color");
+            if (color != null) addon.color.parse(color.toString());
+        } else {
+            if (addon.name == null || addon.name.isBlank()) addon.name = addon.getClass().getSimpleName();
+            if (addon.authors == null) addon.authors = new String[0];
+        }
+
+        ADDONS.add(addon);
+        MeteorClient.LOG.info("Discovered Meteor addon: {} ({})", addon.name, addon.getClass().getName());
+    }
+
+    private static Object first(Map<String, Object> properties, String... keys) {
+        for (String key : keys) {
+            Object value = properties.get(key);
+            if (value != null) return value;
+        }
+        return null;
+    }
+
+    private static List<String> entrypoints(Object value) {
+        if (value instanceof Iterable<?> iterable) {
+            List<String> result = new ArrayList<>();
+            for (Object entry : iterable) result.add(entry.toString());
+            return result;
+        }
+
+        return List.of(value.toString());
+    }
+
+    private static String[] strings(Object value) {
+        if (value == null) return new String[0];
+        if (value instanceof Iterable<?> iterable) {
+            List<String> result = new ArrayList<>();
+            for (Object entry : iterable) result.add(entry.toString());
+            return result.toArray(String[]::new);
+        }
+
+        String text = value.toString().trim();
+        if (text.isEmpty()) return new String[0];
+        return new String[] { text };
     }
 }

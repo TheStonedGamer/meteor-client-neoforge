@@ -109,7 +109,7 @@ public class InstantRebreak extends Module {
                 if (rotate.get()) Rotations.rotate(Rotations.getYaw(blockPos), Rotations.getPitch(blockPos), this::sendPacket);
                 else sendPacket();
 
-                mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+                mc.getNetworkHandler().send(new HandSwingC2SPacket(Hand.MAIN_HAND));
             }
         } else {
             ticks++;
@@ -117,7 +117,7 @@ public class InstantRebreak extends Module {
     }
 
     public void sendPacket() {
-        mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, blockPos, direction == null ? Direction.UP : direction));
+        mc.getNetworkHandler().send(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, blockPos, direction == null ? Direction.UP : direction));
     }
 
     public boolean shouldMine() {

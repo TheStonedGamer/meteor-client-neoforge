@@ -212,11 +212,11 @@ public class AutoCity extends Module {
         if (rotate.get()) Rotations.rotate(Rotations.getYaw(targetPos), Rotations.getPitch(targetPos));
 
         Direction direction = BlockUtils.getDirection(targetPos);
-        if (!done) mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, targetPos, direction));
-        mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, targetPos, direction));
+        if (!done) mc.getNetworkHandler().send(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, targetPos, direction));
+        mc.getNetworkHandler().send(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, targetPos, direction));
 
         if (swingHand.get()) mc.player.swingHand(Hand.MAIN_HAND);
-        else mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+        else mc.getNetworkHandler().send(new HandSwingC2SPacket(Hand.MAIN_HAND));
 
         if (switchMode.get() == SwitchMode.Silent) InvUtils.swapBack();
     }

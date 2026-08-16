@@ -153,7 +153,7 @@ public class FontUtils {
     }
 
     public static InputStream stream(String builtin) {
-        return FontUtils.class.getResourceAsStream("/assets/" + MeteorClient.MOD_ID + "/fonts/" + builtin + ".ttf");
+        return FontUtils.class.getResourceAsStream("/assets/" + MeteorClient.RESOURCE_NAMESPACE + "/fonts/" + builtin + ".ttf");
     }
 
     public static InputStream stream(File file) {

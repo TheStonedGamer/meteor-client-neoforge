@@ -48,15 +48,15 @@ public class Packet extends ElytraFlightMode {
         }
 
         mc.player.setVelocity(vec3d);
-        mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-        mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.OnGroundOnly(true));
+        mc.player.networkHandler.send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+        mc.player.networkHandler.send(new PlayerMoveC2SPacket.OnGroundOnly(true));
     }
 
     //Walalalalalalalalalalalala
     @Override
     public void onPacketSend(PacketEvent.Send event) {
         if (event.packet instanceof PlayerMoveC2SPacket) {
-            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+            mc.player.networkHandler.send(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
         }
     }
 

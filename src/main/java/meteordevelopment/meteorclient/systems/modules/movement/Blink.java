@@ -108,7 +108,7 @@ public class Blink extends Module {
 
     private void dumpPackets(boolean send) {
         synchronized (packets) {
-            if (send) packets.forEach(mc.player.networkHandler::sendPacket);
+            if (send) packets.forEach(mc.player.networkHandler::send);
             packets.clear();
         }
 

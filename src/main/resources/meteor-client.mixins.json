@@ -132,6 +132,7 @@
     "MultiplayerScreenMixin",
     "MutableTextMixin",
     "PacketByteBufMixin",
+    "PacketInflaterMixin",
     "ParticleManagerMixin",
     "PlayerArmorSlotMixin",
     "PlayerEntityMixin",

@@ -68,9 +68,8 @@ public abstract class DynamicRegistryListSettingScreen<E> extends WindowScreen {
         // Left (all)
         WTable left = abc(pairs -> registry.ifPresent(registry -> {
             registry.streamEntries()
-                .map(RegistryEntry.Reference::getKey)
-                .filter(Optional::isPresent)
-                .map(Optional::get).forEach(t -> {
+                .map(RegistryEntry.Reference::registryKey)
+                .forEach(t -> {
                     if (skipValue(t) || collection.contains(t)) return;
 
                     int words = Utils.searchInWords(getValueName(t), filterText);
